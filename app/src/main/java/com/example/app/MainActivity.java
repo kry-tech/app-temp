@@ -9,32 +9,19 @@ import rikka.shizuku.Shizuku;
 
 public class MainActivity extends Activity {
 
-    private static final int REQUEST_CODE = 1;
     TextView tv;
-
-    private final Shizuku.OnRequestPermissionResultListener listener =
-            (requestCode, grantResult) -> {
-                if (requestCode == REQUEST_CODE) {
-                    if (grantResult == PackageManager.PERMISSION_GRANTED) {
-                        tv.setText("Shizuku autorizado");
-                    } else {
-                        tv.setText("Permissão negada");
-                    }
-                }
-            };
+    final int CODE = 100;
 
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
 
         tv = new TextView(this);
-        tv.setText("Verificando Shizuku...");
+        tv.setText("Testando Shizuku...");
         setContentView(tv);
 
-        Shizuku.addRequestPermissionResultListener(listener);
-
         if (!Shizuku.pingBinder()) {
-            tv.setText("Inicie o Shizuku primeiro");
+            tv.setText("Shizuku não iniciado");
             return;
         }
 
@@ -42,16 +29,22 @@ public class MainActivity extends Activity {
                 != PackageManager.PERMISSION_GRANTED) {
 
             tv.setText("Pedindo permissão...");
-            Shizuku.requestPermission(REQUEST_CODE);
+            Shizuku.requestPermission(CODE);
 
         } else {
-            tv.setText("Já autorizado");
-        }
-    }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Shizuku.removeRequestPermissionResultListener(listener);
+            tv.setText("Permissão OK");
+
+            try {
+                Shizuku.newProcess(
+                    new String[]{"sh", "-c", "echo Shizuku_OK"},
+                    null,
+                    null
+                );
+
+            } catch (Exception e) {
+                tv.setText("Erro: " + e.getMessage());
+            }
+        }
     }
 }
