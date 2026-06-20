@@ -5,13 +5,6 @@
     <application
         android:theme="@android:style/Theme.Material.Light">
 
-        <provider
-            android:name="rikka.shizuku.ShizukuProvider"
-            android:authorities="${applicationId}.shizuku"
-            android:multiprocess="false"
-            android:exported="false"
-            android:enabled="true"/>
-
         <activity
             android:name=".MainActivity"
             android:exported="true">

@@ -9,29 +9,28 @@ import rikka.shizuku.Shizuku;
 
 public class MainActivity extends Activity {
 
-    private static final int CODE = 100;
+    private final int CODE = 100;
 
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
 
         TextView tv = new TextView(this);
-        tv.setText("Testando Shizuku...");
+        tv.setText("Shizuku test");
         setContentView(tv);
 
         if (!Shizuku.pingBinder()) {
-            tv.setText("Abra o Shizuku primeiro");
+            tv.setText("Shizuku não conectado");
             return;
         }
 
         if (Shizuku.checkSelfPermission()
                 != PackageManager.PERMISSION_GRANTED) {
 
-            tv.setText("Pedindo permissão...");
             Shizuku.requestPermission(CODE);
 
         } else {
-            tv.setText("Shizuku autorizado");
+            tv.setText("Permitido");
         }
     }
 }
