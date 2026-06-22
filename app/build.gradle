@@ -16,6 +16,5 @@ android {
 }
 
 dependencies {
-    implementation "dev.rikka.shizuku:api:13.2.0"
-    implementation "androidx.annotation:annotation:1.7.0"  // elimina os warnings
+    implementation "dev.rikka.shizuku:api:13.1.5"
 }

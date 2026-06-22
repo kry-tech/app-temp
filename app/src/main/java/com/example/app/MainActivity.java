@@ -42,7 +42,7 @@ public class MainActivity extends Activity {
                 }
             });
 
-            // Método que realmente abre o diálogo (funciona na 13.1.5)
+            // Método que abre o diálogo (funciona na 13.1.5)
             Shizuku.requestPermission(CODE);
         } else {
             tv.setText("Permitido");
