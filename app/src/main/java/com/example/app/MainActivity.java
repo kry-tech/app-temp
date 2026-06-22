@@ -93,8 +93,12 @@ public class MainActivity extends Activity {
     private void executeCommand(String command) {
         new Thread(() -> {
             try {
-                // Usa o método público com 2 argumentos (cmd, env)
-                Process process = Shizuku.newProcess(new String[]{"sh", "-c", command}, null);
+                // Assinatura correta: (String[] cmd, String[] env, String dir)
+                Process process = Shizuku.newProcess(
+                        new String[]{"sh", "-c", command},
+                        null,
+                        null
+                );
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
                 StringBuilder sb = new StringBuilder();
