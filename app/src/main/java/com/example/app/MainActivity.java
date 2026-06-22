@@ -14,6 +14,7 @@ import android.widget.Toast;
 import rikka.shizuku.Shizuku;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 
 public class MainActivity extends Activity {
 
@@ -47,7 +48,6 @@ public class MainActivity extends Activity {
 
         setContentView(layout);
 
-        // Verifica Shizuku e permissão
         if (!Shizuku.pingBinder()) {
             output.setText("Shizuku não está em execução");
             return;
@@ -93,11 +93,13 @@ public class MainActivity extends Activity {
     private void executeCommand(String command) {
         new Thread(() -> {
             try {
-                // Método público com 2 argumentos: (String[] cmd, String[] env)
-                Process process = Shizuku.newProcess(
-                        new String[]{"sh", "-c", command},
-                        null
-                );
+                // Usa reflexão para contornar o bug da API 13.1.5
+                Method newProcess = Shizuku.class.getDeclaredMethod("newProcess",
+                        String[].class, String[].class, String.class);
+                newProcess.setAccessible(true);
+                Process process = (Process) newProcess.invoke(null,
+                        new String[]{"sh", "-c", command}, null, null);
+
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
                 StringBuilder sb = new StringBuilder();
