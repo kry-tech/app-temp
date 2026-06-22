@@ -26,7 +26,7 @@ public class MainActivity extends Activity {
         }
 
         if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-            // Novo método: Activity + requestCode + listener
+            // Agora funciona com a API 13.2.0+
             Shizuku.requestPermission(this, CODE, new Shizuku.OnRequestPermissionResultListener() {
                 @Override
                 public void onRequestPermissionResult(int requestCode, int grantResult) {
