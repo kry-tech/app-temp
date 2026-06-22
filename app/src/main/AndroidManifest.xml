@@ -2,9 +2,11 @@
 
     <uses-permission android:name="moe.shizuku.manager.permission.API_V23"/>
 
-    <!-- ESSENCIAL para Android 11+: enxergar o Shizuku -->
     <queries>
         <package android:name="moe.shizuku.privileged.api" />
+        <intent>
+            <action android:name="moe.shizuku.api.action.BIND" />
+        </intent>
     </queries>
 
     <application

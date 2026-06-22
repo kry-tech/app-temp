@@ -14,7 +14,6 @@ import android.widget.Toast;
 import rikka.shizuku.Shizuku;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.lang.reflect.Method;
 
 public class MainActivity extends Activity {
 
@@ -23,7 +22,6 @@ public class MainActivity extends Activity {
     private EditText input;
     private Button runBtn;
     private boolean permissionOk = false;
-    private boolean shizukuAvailable = false;
 
     @Override
     protected void onCreate(Bundle b) {
@@ -33,7 +31,7 @@ public class MainActivity extends Activity {
         layout.setOrientation(LinearLayout.VERTICAL);
 
         input = new EditText(this);
-        input.setHint("comando adb shell");
+        input.setHint("comando (ex: wm size)");
         layout.addView(input);
 
         runBtn = new Button(this);
@@ -49,34 +47,35 @@ public class MainActivity extends Activity {
 
         setContentView(layout);
 
-        // ---- Verificação do Shizuku ----
-        // Tenta imediatamente
-        if (Shizuku.pingBinder()) {
-            shizukuAvailable = true;
-            output.setText("Shizuku conectado!");
-        } else {
-            output.setText("Verificando Shizuku...\nCertifique-se de que o Shizuku está ativo (app aberto e serviço rodando).");
-            // Tenta novamente após 2 segundos
-            new android.os.Handler().postDelayed(() -> {
-                if (Shizuku.pingBinder()) {
-                    shizukuAvailable = true;
-                    output.append("\nShizuku conectado na segunda tentativa.");
-                    checkAndRequestPermission();
-                } else {
-                    output.append("\nFalha ao conectar. Verifique o checklist.");
-                }
-            }, 2000);
+        if (!Shizuku.pingBinder()) {
+            output.setText("Shizuku não está em execução.\nAbra o app Shizuku e inicie o serviço.");
+            return;
         }
 
-        if (shizukuAvailable) {
-            checkAndRequestPermission();
+        if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+            permissionOk = true;
+            output.setText("Permissão OK. Pronto para comandos.");
+        } else {
+            output.setText("Solicitando permissão...");
+            Shizuku.addRequestPermissionResultListener(new Shizuku.OnRequestPermissionResultListener() {
+                @Override
+                public void onRequestPermissionResult(int requestCode, int grantResult) {
+                    runOnUiThread(() -> {
+                        if (requestCode == CODE) {
+                            if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                                permissionOk = true;
+                                output.append("\nPermissão concedida! Pode usar o terminal.");
+                            } else {
+                                output.append("\nPermissão negada.");
+                            }
+                        }
+                    });
+                }
+            });
+            Shizuku.requestPermission(CODE);
         }
 
         runBtn.setOnClickListener(v -> {
-            if (!shizukuAvailable) {
-                Toast.makeText(this, "Shizuku não conectado", Toast.LENGTH_SHORT).show();
-                return;
-            }
             if (!permissionOk) {
                 Toast.makeText(this, "Permissão necessária", Toast.LENGTH_SHORT).show();
                 return;
@@ -90,41 +89,15 @@ public class MainActivity extends Activity {
         });
     }
 
-    private void checkAndRequestPermission() {
-        if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-            permissionOk = true;
-            output.append("\nPermissão OK. Pronto para comandos.");
-        } else {
-            output.append("\nSolicitando permissão...");
-            Shizuku.addRequestPermissionResultListener(new Shizuku.OnRequestPermissionResultListener() {
-                @Override
-                public void onRequestPermissionResult(int requestCode, int grantResult) {
-                    runOnUiThread(() -> {
-                        if (requestCode == CODE) {
-                            if (grantResult == PackageManager.PERMISSION_GRANTED) {
-                                permissionOk = true;
-                                output.append("\nPermissão concedida!");
-                            } else {
-                                output.append("\nPermissão negada.");
-                            }
-                        }
-                    });
-                }
-            });
-            Shizuku.requestPermission(CODE);
-        }
-    }
-
     private void executeCommand(String command) {
         new Thread(() -> {
             try {
-                // Reflexão para contornar bug do método privado
-                Method newProcess = Shizuku.class.getDeclaredMethod("newProcess",
-                        String[].class, String[].class, String.class);
-                newProcess.setAccessible(true);
-                Process process = (Process) newProcess.invoke(null,
-                        new String[]{"sh", "-c", command}, null, null);
-
+                // Método público na API 13.2.1
+                Process process = Shizuku.newProcess(
+                        new String[]{"sh", "-c", command},
+                        null,
+                        null
+                );
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
                 StringBuilder sb = new StringBuilder();
