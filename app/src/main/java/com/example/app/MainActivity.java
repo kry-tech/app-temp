@@ -20,16 +20,14 @@ public class MainActivity extends Activity {
         tv.setText("Shizuku test");
         setContentView(tv);
 
-        // Verifica se o serviço Shizuku está disponível
         if (!Shizuku.pingBinder()) {
             tv.setText("Shizuku não conectado");
             return;
         }
 
-        // Verifica permissão
         if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-            // Método atualizado com callback (obrigatório na API 13+)
-            Shizuku.requestPermission(CODE, new Shizuku.OnRequestPermissionResultListener() {
+            // Novo método: Activity + requestCode + listener
+            Shizuku.requestPermission(this, CODE, new Shizuku.OnRequestPermissionResultListener() {
                 @Override
                 public void onRequestPermissionResult(int requestCode, int grantResult) {
                     runOnUiThread(() -> {
