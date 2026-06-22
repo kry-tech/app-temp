@@ -93,8 +93,8 @@ public class MainActivity extends Activity {
     private void executeCommand(String command) {
         new Thread(() -> {
             try {
-                // Executa o comando como ADB shell via Shizuku
-                Process process = Shizuku.newProcess(new String[]{"sh", "-c", command}, null, null);
+                // Usa o método público com 2 argumentos (cmd, env)
+                Process process = Shizuku.newProcess(new String[]{"sh", "-c", command}, null);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 BufferedReader errReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
                 StringBuilder sb = new StringBuilder();
@@ -103,7 +103,6 @@ public class MainActivity extends Activity {
                 while ((line = reader.readLine()) != null) {
                     sb.append(line).append("\n");
                 }
-                // erros também
                 while ((line = errReader.readLine()) != null) {
                     sb.append("[ERR] ").append(line).append("\n");
                 }
