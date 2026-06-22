@@ -26,8 +26,8 @@ public class MainActivity extends Activity {
         }
 
         if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-            // Agora funciona com a API 13.2.0+
-            Shizuku.requestPermission(this, CODE, new Shizuku.OnRequestPermissionResultListener() {
+            // Registra o listener ANTES de pedir permissão
+            Shizuku.addRequestPermissionResultListener(new Shizuku.OnRequestPermissionResultListener() {
                 @Override
                 public void onRequestPermissionResult(int requestCode, int grantResult) {
                     runOnUiThread(() -> {
@@ -41,6 +41,9 @@ public class MainActivity extends Activity {
                     });
                 }
             });
+
+            // Método que realmente abre o diálogo (funciona na 13.1.5)
+            Shizuku.requestPermission(CODE);
         } else {
             tv.setText("Permitido");
         }
